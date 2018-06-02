@@ -1,0 +1,897 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Moving Beyond the Basics in SpecFlow</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<style>
+			.reveal pre code {
+				max-height: unset;
+			}
+
+			.reveal pre code.smaller {
+				font-size: 85%;
+			}
+
+			.reveal pre code.squish {
+				line-height: 25px;
+			}
+
+			.reveal section img.judgement {
+				z-index: 1;
+				background: unset;
+				border: none;
+				position: absolute;
+				height: 75px;
+				top: 0;
+				right: 0;
+				margin: 0;
+				box-shadow: none;
+			}
+
+			.reveal section img.social {
+				background: unset;
+				border: none;
+				display: inline-block;
+				height: 30px;
+				margin: 0 10px 0 0;
+				box-shadow: none;
+			}
+		</style>
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>SpecFlow</h1>
+					<h3>Moving Beyond the Basics</h3>
+					<p>
+						<small>
+						Presented by <a href="http://joebuschmann.com">Joe Buschmann</a>
+						</small>
+					</p>
+					<p>
+						<small>
+							<a href="https://twitter.com/joebuschmann">
+								<img src="images/twitter.png" class="social" alt="@joebuschmann" />
+							</a>
+							<a href="https://www.linkedin.com/in/joebuschmann">
+								<img src="images/linkedin.png" class="social" alt="Linked In" />
+							</a>
+						</small>
+					</p>
+				</section>
+				<section>
+					<h3>What is SpecFlow?</h3>
+					<p class="fragment">Define, manage, and automate human-readable acceptance tests in .NET</p>
+					<p class="fragment">Enable BDD with easy to understand tests</p>
+					<p class="fragment">Build up a living documentation of your system</p>
+				</section>
+				<section>
+					<h3>Visual Studio Extension</h3>
+				</section>
+				<section>
+					<h3>Design-time</h3>
+					<ul>
+						<li class="fragment">Gherkin syntax highlighting</li>
+						<li class="fragment">File templates for features, hooks, and step definitions</li>
+						<li class="fragment">Executable test generation (code-behind)</li>
+					</ul>
+				</section>
+				<section>
+					<h3>NuGet Package</h3>
+				</section>
+				<section>
+					<h3>Run-time</h3>
+					<ul>
+						<li class="fragment">Test scenario context</li>
+						<li class="fragment">Simple dependency injection</li>
+						<li class="fragment">Table helper extension methods</li>
+					</ul>
+				</section>
+				<section id="terminology">
+					<h3>Terminology</h3>
+					<p class="fragment current-visible grow">Gherkin</p>
+					<p class="fragment current-visible grow">Cucumber</p>
+					<p class="fragment current-visible grow">SpecFlow</p>
+				</section>
+				<section>
+					Getting Started in Three Steps
+				</section>
+				<section>
+					Step 1: Specify
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Feature: GoogleSearch
+  In order to validate Google's search service
+  As a first time user of Selenium
+  I want to perform a search
+
+Scenario: Perform a Google Search
+  Given I navigate to www.google.com
+  When I search for kittens
+  Then Google should return valid search results
+						</code>
+					</pre>
+				</section>
+				<section>
+					Step 2: Bind
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+    [Binding]
+    public class GoogleSearch
+    {
+        public GoogleSearch() { // Snip }
+
+        [Given(@"I navigate to (.*)")]
+        public void Navigate(string url) { // Snip }
+
+        [When(@"I search for (.*)")]
+        public void Search(string searchTerm) { // Snip }
+
+        [Then(@"Google should return valid search results")]
+        public void ValidateSearchResults() { // Snip }
+    }
+    					</code>
+					</pre>
+				</section>
+				<section>
+					Step 3: Automate
+				</section>
+				<section>
+					<pre>
+						<code class="bash" data-trim>
+nunit-console.exe /xml:results.xml some\path\tests.dll
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>So you’ve written some tests using Specflow, and you’re feeling good about test coverage. But as the code base gets larger, some issues are starting to emerge.</p>
+				</section>
+				<section>
+					<p>Bloated ScenarioContext</p>
+					<p class="fragment">Tedious table manipulation</p>
+					<p class="fragment">Parsing arguments in bindings</p>
+					<p class="fragment">Tech speak is sneaking into the Gherkin</p>
+					<p class="fragment">Enormous base classes</p>
+					<p class="fragment">What can you do about these issues?</p>
+				</section>
+				<section>
+					<h2>Gherkin</h2>
+				</section>
+				<section>
+					When building complex test data, avoid parsing table text
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | Name           | Address                                   |
+    | Miss Liz Lemon | 30 Rockefeller Plaza; New York; NY; 10112 |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | First Name | Last Name | Salutation |
+    | Liz        | Lemon     | Miss       |
+  And the address
+    | Line 1                | City     | State | Zipcode |
+    | 30 Rockefeller Plaza  | New York | NY    | 10112   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Use natural language instead of tech speak
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+							When I remove the product at index 5
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+							When I remove the 5th product
+						</code>
+					</pre>
+				</section>
+				<section>
+					Avoid numeric IDs
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Update price
+  When I choose the product with ID 46
+  And update the price to $199.00
+  Then the price should be saved
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Background:
+  Given I have the following products
+    | Id | Name       |
+    | 45 | Galaxy S5  |
+    | 46 | iPhone 6   |
+    | 47 | Nokia Icon |
+ 
+Scenario: Update price
+  When I choose the iPhone 6
+  And update the price to $199.00
+  Then the price should be saved
+						</code>
+					</pre>
+				</section>
+				<section>
+					Put rules and equations in the feature file description
+				</section>
+				<!--section>
+					<pre>
+						<code class="gherkin" data-trim>
+Feature: Rules for cells
+  Cells die if there are fewer than 2 neighbours (lonely)
+  Cells die if there are more than 3 neighbours (starving)
+  Cells are born in empty spaces with 3 neighbours
+
+Scenario: Lonely cells die
+  Given a grid which looks like
+    ........
+    .X......
+    ....XX..
+    ........
+						</code>
+					</pre>
+					<p><small><cite><a href="https://stackoverflow.com/questions/49642449/how-to-specify-an-equation-with-bdd">How to specify an equation with BDD</a></cite> -Answer by Lunivore on Stack Overflow</small></p>
+				</section-->
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Feature: Insurance Quote
+  Test the quoting engine.
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Feature: Insurance Quote
+  Quotes begin with a baseline price.
+  It is adjusted by the insured individual's risk score.
+  It is further adjusted by other scores from people
+    living near the insured.
+  quote = baseline *
+    (individual adjustment + weight * (co-located adjustment - 1))
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin smaller" data-trim>
+Scenario Outline: Calculate Quote
+  Given a baseline price of $&lt;baseline&gt;
+  And an individual adjustment of &lt;indvAdjustment&gt;
+  And a co-located adjustment of &lt;coLocAdjustment&gt; and weight of &lt;weight&gt;
+  When I calculate the final quote
+  Then the amount should be $&lt;amount&gt;
+
+Examples:
+  | baseline | indvAdjustment | coLocAdjustment | weight | amount |
+  | 50       | 0.90           | 0.95            | 0.50   | 43.75  |
+  | 50       | 1.15           | 1.30            | 0.50   | 65.00  |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h2>Bindings</h2>
+				</section>
+				<section>
+					Use regular expressions to convert natural language to input parameters
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[When(@"I remove the product at index (.*)")]
+public void RemoveProduct(int index)
+{
+    _products.RemoveAt(--index);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[When(@"I remove the (\d+)(?:st|nd|rd|th) product")]
+public void RemoveProduct(int index)
+{
+    _products.RemoveAt(--index);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[StepArgumentTransformation(@"(\d+)(?:st|nd|rd|th)")]
+public int GetIndex(int index)
+{
+    return index - 1;
+}
+
+[When(@"I remove the (.*) product")]
+public void RemoveProduct(int index)
+{
+    _products.RemoveAt(index);
+}
+
+[When(@"I update the (.*) product to (.*)")]
+public void UpdateProduct(int index, string productName)
+{
+    _products[index] = productName;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Use step argument transformations to simplify your bindings
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[When(@"the products are sorted by name (.*)")]
+public void SortProducts(string sortOrderText)
+{
+    SortOrder sortOrder = SortOrder.Ascending;
+
+    if (sortOrderText == "from A-Z")
+        sortOrder = SortOrder.Ascending;
+    else if (sortOrderText == "from Z-A")
+        sortOrder = SortOrder.Descending;
+    else
+        Assert.Fail("Invalid sort order text.");
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[StepArgumentTransformation(@"from (A-Z|Z-A)")]
+public SortOrder SortOrderTransform(string sortOrderText)
+{
+    if (sortOrderText == "Z-A")
+        return SortOrder.Descending;
+
+    return SortOrder.Ascending;
+}
+
+[When(@"the products are sorted by name (.*)")]
+public void SortProducts(SortOrder sortOrder)
+{
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Table helpers make working with tables easier
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Given(@"the following address")]
+public void GivenTheFollowingAddress(Table table)
+{
+    Address address = new Address();
+
+    address.Line1 = table.Rows[0]["Line 1"];
+    address.Line2 = table.Rows[0]["Line 2"];
+    address.City = table.Rows[0]["City"];
+    address.State = table.Rows[0]["State"];
+    address.Zipcode = table.Rows[0]["Zipcode"];
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Given(@"the following address")]
+public void GivenTheFollowingAddress(Table table)
+{
+    Address address = table.CreateInstance&lt;Address&gt;();
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Then(@"the address is")]
+public void ValidateAddress(Table table)
+{
+    Assert.AreEqual(table.Rows[0]["Line 1"], _address.Line1);
+    Assert.AreEqual(table.Rows[0]["Line 2"], _address.Line2);
+    Assert.AreEqual(table.Rows[0]["City"], _address.City);
+    Assert.AreEqual(table.Rows[0]["State"], _address.State);
+    Assert.AreEqual(table.Rows[0]["Zipcode"], _address.Zipcode);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Then(@"the address is")]
+public void ValidateAddress(Table table)
+{
+    table.CompareToInstance(_address);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h3>TechTalk.SpecFlow.Assist</h3>
+					<ul>
+						<li class="fragment">CreateInstance</li>
+						<li class="fragment">CreateSet</li>
+						<li class="fragment">FillInstance</li>
+						<li class="fragment">CompareToInstance</li>
+						<li class="fragment">CompareToSet</li>
+					</ul>
+				</section>
+				<section>
+					Vertical versus horizontal tables
+				</section>
+				<section>
+					<p>Vertical Table</p>
+					<pre>
+						<code class="gherkin" data-trim>
+| Field   | Value                |
+| Line 1  | 30 Rockefeller Plaza |
+| City    | New York             |
+| State   | NY                   |
+| Zipcode | 10112                |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>Horizontal Table</p>
+					<pre>
+						<code class="gherkin" data-trim>
+| Line 1                | City     | State | Zipcode |
+| 30 Rockefeller Plaza  | New York | NY    | 10112   |
+| 311 South Wacker Dr   | Chicago  | IL    | 60606   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Customize field mappings with table aliases
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+public class Address
+{
+    [TableAliases("Street")]
+    public string Line1 { get; set; }
+
+    [TableAliases("Township", "Village")]
+    public string City { get; set; }
+
+    [TableAliases("Province")]
+    public string State { get; set; }
+
+    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
+    public string Zipcode { get; set; }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Given the address
+  | Street          | Village | Province | Postal Code |
+  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Customize value mappings with IValueRetriever and IValueComparer
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Given the address
+  | Street          | Village | Province | Postal Code | Location |
+  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     | (42, 88) |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+public class Address
+{
+    [TableAliases("Street")]
+    public string Line1 { get; set; }
+
+    [TableAliases("Township", "Village")]
+    public string City { get; set; }
+
+    [TableAliases("Province")]
+    public string State { get; set; }
+
+    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
+    public string Zipcode { get; set; }
+
+    public GeoLocation Location { get; set; }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>IValueRetriever</p>
+					<pre>
+						<code class="cs smaller" data-trim>
+public bool CanRetrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
+    Type targetType, Type propertyType)
+{
+    return propertyType == typeof(GeoLocation);
+}
+
+public object Retrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
+    Type targetType, Type propertyType)
+{
+    string coordinates = keyValuePair.Value;
+    GeoLocation location;
+
+    if (TryGetLocation(coordinates, out location))
+        return location;
+
+    throw new Exception(
+        $"Unable to parse the location coordinates {coordinates}.");
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>IValueComparer</p>
+					<pre>
+						<code class="cs" data-trim>
+public bool CanCompare(object actualValue)
+{
+    return actualValue is GeoLocation;
+}
+
+public bool Compare(string expectedValue, object actualValue)
+{
+    GeoLocation expectedLocation;
+
+    if (TryGetLocation(expectedValue, out expectedLocation))
+        return expectedLocation.Equals(actualValue);
+
+    return false;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+[BeforeTestRun]
+public static void RegisterValueMappings()
+{
+    var geoLocationValueHandler = new GeoLocationValueHandler();
+    Service.Instance.RegisterValueRetriever(geoLocationValueHandler);
+    Service.Instance.RegisterValueComparer(geoLocationValueHandler);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Prefer composition over inheritance
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+@json
+Scenario: Invoke service with JSON payload
+  Given a fully populated request object
+  When I invoke the service
+  Then a valid response should be returned
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[Binding]
+public sealed class AddressServiceSteps
+{
+    private readonly IBodySerializer _bodySerializer;
+
+    public ContentTypeSteps(IBodySerializer bodySerializer)
+    {
+        _bodySerializer = bodySerializer;
+    }
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[Binding]
+public class ConfigureSerializer
+{
+    private readonly IObjectContainer _objectContainer;
+
+    public ConfigureSerializer(IObjectContainer objectContainer)
+    {
+        _objectContainer = objectContainer;
+
+        // Add a default serializer.
+        ConfigureJson();
+    }
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+[BeforeScenario("xml")]
+public void ConfigureXml()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;XmlBodySerializer, IBodySerializer&gt;();
+}
+
+[BeforeScenario("json")]
+public void ConfigureJson()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;JsonBodySerializer, IBodySerializer&gt;();
+}
+
+[BeforeScenario("formurlencoded")]
+public void ConfigureFormUrlEncoded()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;FormUrlEncodingBodySerializer, IBodySerializer&gt;();
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller squish" data-trim>
+[Binding]
+public class BootstrapSelenium : IDisposable
+{
+    private readonly IObjectContainer _objectContainer;
+    private IWebDriver _webDriver = null;
+
+    public BootstrapSelenium(IObjectContainer objectContainer)
+    {
+        _objectContainer = objectContainer;
+    }
+
+    [BeforeScenario]
+    public void LoadDriver()
+    {
+        _webDriver = BuildWebDriver();
+        _objectContainer.RegisterInstanceAs(_webDriver, typeof (IWebDriver));
+    }
+
+    [AfterScenario]
+    public void Dispose()
+    {
+        _webDriver?.Quit();
+    }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Code for parallel execution - avoid static context properties
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+private readonly ScenarioContext _scenarioContext
+    = ScenarioContext.Current;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+private readonly ScenarioContext _scenarioContext;
+
+public AddressSteps(ScenarioContext scenarioContext)
+{
+    _scenarioContext = scenarioContext;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>The test runner has to support parallel execution</p>
+					<ul>
+						<li class="fragment">NUnit v3</li>
+						<li class="fragment">xUnit v2</li>
+						<li class="fragment">SpecFlow+ Runner</li>
+					</ul>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+using NUnit.Framework;
+[assembly: Parallelizable(ParallelScope.Fixtures)]
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h2>Reports</h2>
+				</section>
+				<section>
+					<p>Test Execution Report</p>
+				</section>
+				<section data-background-iframe="file:///C:/Users/joe.buschmann/OneDrive%20-%20kCura/KCDC/Presentation/reports/test-execution-report.html" data-background-interactive data-background-color="#FFFFFF">
+				</section>
+				<section>
+					<p>Step Definition Report</p>
+				</section>
+				<section data-background-iframe="file:///C:/Users/joe.buschmann/OneDrive%20-%20kCura/KCDC/Presentation/reports/step-definition-report.html" data-background-interactive data-background-color="#FFFFFF">
+				</section>
+				<section>
+					<h2>Plugins</h2>
+				</section>
+				<section>
+					<h3>Plugin Types</h3>
+					<p class="fragment current-visible grow">Runtime</p>
+					<p class="fragment current-visible grow">Generator</p>
+					<p class="fragment current-visible grow">Runtime Generator</p>
+				</section>
+				<section>
+					<h3>Configuration</h3>
+					<ol>
+						<li class="fragment">Add the SpecFlow.CustomPlugin NuGet package</li>
+						<li class="fragment">Implement IGeneratorPlugin</li>
+						<li class="fragment">Add the GeneratorPlugin assembly level attribute</li>
+						<li class="fragment">Assembly name must have the suffix ".SpecFlowPlugin"</li>
+						<li class="fragment">Update configuration</li>
+					</ol>
+				</section>
+				<section>
+					<pre>
+						<code class="xml" data-trim>
+&lt;plugins&gt;
+  &lt;add name="NUnit3WithGlobalTestGenerator"
+       path=".\specflow-plugins"
+       type="Generator" /&gt;
+&lt;/plugins&gt;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+[assembly: GeneratorPlugin(typeof(NUnit3WithGlobalTestGeneratorPlugin))]
+
+public class NUnit3WithGlobalTestGeneratorPlugin : IGeneratorPlugin
+{
+    public void Initialize(GeneratorPluginEvents generatorPluginEvents,
+        GeneratorPluginParameters generatorPluginParameters)
+    {
+        generatorPluginEvents.CustomizeDependencies += (sender, args) =>
+        {
+            args.ObjectContainer
+                .RegisterTypeAs&lt;NUnit3WithGlobalTestGeneratorProvider, IUnitTestGeneratorProvider&gt;();
+        };
+    }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>Further Reading</p>
+					<ul style="font-size: smaller">
+						<li><a href="http://specflow.org/documentation/">SpecFlow Documentation</a></li>
+						<ul>
+							<li><a href="http://specflow.org/documentation/Parallel-Execution/">Parallel Execution</a></li>
+							<li><a href="http://specflow.org/documentation/Reporting/">Reports</a></li>
+							<li><a href="http://specflow.org/documentation/Plugins/">Plugins</a></li>
+						</ul>
+						<li><a href="https://joebuschmann.com/tag/specflow/">JoeBuschmann.com</a></li>
+						<li><a href="http://gasparnagy.com/2017/02/specflow-tips-baseclass-or-context-injection/">Base Class or Context Injection?</a></li>
+						<li><a href="http://gasparnagy.com/2015/05/specflow-tips-problems-with-placing-step-definitions-to-base-classes/">Problems with Step Definitions in Base Classes</a></li>
+						<li><a href="https://stackoverflow.com/questions/49642449/how-to-specify-an-equation-with-bdd">How to specify an equation with BDD</a></li>
+					</ul>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				transition: 'none',
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+
+			Reveal.configure({
+				slideNumber: 'c/t'
+			});
+		</script>
+	</body>
+</html>
