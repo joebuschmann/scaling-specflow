@@ -158,11 +158,9 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					<p>So you’ve written some tests using Specflow, and you’re feeling good about test coverage. But as the code base gets larger, some issues are starting to emerge.</p>
 				</section>
 				<section>
-					<p>Bloated ScenarioContext</p>
-					<p class="fragment">Tedious table manipulation</p>
-					<p class="fragment">Parsing arguments in bindings</p>
-					<p class="fragment">Tech speak is sneaking into the Gherkin</p>
-					<p class="fragment">Enormous base classes</p>
+					<p>Awkward Gherkin</p>
+					<p class="fragment">Duplicate code/lack of reusability</p>
+					<p class="fragment">Tedious table manipulation</p>					
 					<p class="fragment">What can you do about these issues?</p>
 				</section>
 				<section>
@@ -289,6 +287,230 @@ Examples:
   | 50       | 1.15           | 1.30            | 0.50   | 65.00  |
 						</code>
 					</pre>
+				</section>
+				<section>
+					<h2>Reusable Bindings</h2>
+				</section>
+				<section>
+					Problems with Inheritance
+				</section>
+				<section>
+					<img src="images/inheritance.png" />
+				</section>
+				<section>
+					<pre>
+TechTalk.SpecFlow.BindingException : Ambiguous step definitions found
+for step 'Given Invoke Service'
+					</pre>
+				</section>
+				<section>
+					Dependency Injection
+				</section>
+				<section>
+					SpecFlow supports a simple dependency framework
+				</section>
+				<section>
+					<p>Inject dependencies with constructor parameters</p>
+					<pre>
+						<code class="cs smaller" data-trim>
+[Binding]
+public class Search
+{
+    private readonly IWebDriver _webDriver;
+    private readonly ISearchProvider _searchProvider;
+
+    public Search(IWebDriver webDriver, ISearchProvider searchProvider)
+    {
+        _webDriver = webDriver;
+        _searchProvider = searchProvider;
+    }
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>What can you get from the container?</p>
+					<ul>
+						<li class="fragment">Classes decorated with the Binding attribute</li>
+						<li class="fragment">Custom context classes</li>
+						<li class="fragment">Built-in context classes - e.g. ScenarioContext</li>
+						<li class="fragment">The container itself - IObjectContainer</li>
+						<li class="fragment">Dependencies explicitly registered with the container</li>
+					</ul>
+				</section>
+				<section>
+					Example: Retrieve the SpecFlow context objects
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+private readonly ScenarioContext _scenarioContext;
+
+public AddressSteps(ScenarioContext scenarioContext)
+{
+    _scenarioContext = scenarioContext;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Example: You can use DI to load the appropriate Selenium web driver
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller squish" data-trim>
+[Binding]
+public class BootstrapSelenium : IDisposable
+{
+    private readonly IObjectContainer _objectContainer;
+    private IWebDriver _webDriver = null;
+
+    public BootstrapSelenium(IObjectContainer objectContainer)
+    {
+        _objectContainer = objectContainer;
+    }
+
+    [BeforeScenario]
+    public void LoadDriver()
+    {
+        _webDriver = BuildWebDriver();
+        _objectContainer.RegisterInstanceAs(_webDriver, typeof (IWebDriver));
+    }
+
+    // Dispose will be called after scenario execution is complete
+    public void Dispose()
+    {
+        _webDriver?.Quit();
+    }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					Example: You can use tags to conditionally load dependencies
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+@json
+Scenario: Invoke service with JSON payload
+  Given a fully populated request object
+  When I invoke the service
+  Then a valid response should be returned
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+[BeforeScenario("xml")]
+public void ConfigureXml()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;XmlBodySerializer, IBodySerializer&gt;();
+}
+
+[BeforeScenario("json")]
+public void ConfigureJson()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;JsonBodySerializer, IBodySerializer&gt;();
+}
+
+[BeforeScenario("formurlencoded")]
+public void ConfigureFormUrlEncoded()
+{
+    _objectContainer
+        .RegisterTypeAs&lt;FormUrlEncodingBodySerializer, IBodySerializer&gt;();
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[Binding]
+public sealed class AddressServiceSteps
+{
+    private readonly IBodySerializer _bodySerializer;
+
+    public ContentTypeSteps(IBodySerializer bodySerializer)
+    {
+        _bodySerializer = bodySerializer;
+    }
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					What about the Steps class?
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+public abstract class Steps
+{
+    // Built-in context
+    public ScenarioContext ScenarioContext { get; }
+    public FeatureContext FeatureContext { get; }
+    public TestThreadContext TestThreadContext { get; }
+    public ScenarioStepContext StepContext { get; }
+
+    // Call other binding steps
+    public void Given(string step);
+    public void Given(string step, Table tableArg);
+    public void Given(string step, string multilineTextArg);
+    public void Given(string step, string multilineTextArg, Table tableArg);
+
+    // Snip
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Given the customer
+  | First Name | Last Name | Salutation |
+  | Liz        | Lemon     | Miss       |
+And the address
+  | Line 1                | City     | State | Zipcode |
+  | 30 Rockefeller Plaza  | New York | NY    | 10112   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+Table customer = new Table("FirstName", "LastName", "Salutation");
+customer.AddRow("Liz", "Lemon", "Miss");
+
+Table address = new Table("Line 1", "City", "State", "Zipcode");
+address.AddRow("30 Rockefeller Plaza", "New York", "NY", "10112");
+
+Given("the customer", customer);
+Given("the address", address);
+						</code>
+					</pre>
+				</section>
+				<section>
+					Reusable Bindings with StepArgumentTransformation
+				</section>
+				<section>
+					<p style="font-size: larger;">Create reusable bindings by:</p>
+					<ul>
+						<li class="fragment">Avoiding inheritance
+							<ul>
+								<li class="fragment">Including the Steps class</li>
+							</ul>
+						</li>
+						<li class="fragment">Leveraging dependency injection</li>
+						<li class="fragment">Removing table arguments with StepArgumentTransformation</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Bindings</h2>
@@ -609,159 +831,6 @@ public static void RegisterValueMappings()
     var geoLocationValueHandler = new GeoLocationValueHandler();
     Service.Instance.RegisterValueRetriever(geoLocationValueHandler);
     Service.Instance.RegisterValueComparer(geoLocationValueHandler);
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<h2>Dependency Injection</h2>
-				</section>
-				<section>
-					SpecFlow supports a simple dependency framework
-				</section>
-				<section>
-					<p>Inject dependencies with constructor parameters</p>
-					<pre>
-						<code class="cs smaller" data-trim>
-[Binding]
-public class Search
-{
-    private readonly IWebDriver _webDriver;
-    private readonly ISearchProvider _searchProvider;
-
-    public Search(IWebDriver webDriver, ISearchProvider searchProvider)
-    {
-        _webDriver = webDriver;
-        _searchProvider = searchProvider;
-    }
-
-    // Snip
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<p>What can you get from the container?</p>
-					<ul>
-						<li class="fragment">Classes decorated with the Binding attribute</li>
-						<li class="fragment">Custom context classes</li>
-						<li class="fragment">Built-in context classes - e.g. ScenarioContext</li>
-						<li class="fragment">The container itself - IObjectContainer</li>
-						<li class="fragment">Dependencies explicitly registered with the container</li>
-					</ul>
-				</section>
-				<section>
-					Example: You can use DI to load the appropriate Selenium web driver
-				</section>
-				<section>
-					<pre>
-						<code class="cs smaller squish" data-trim>
-[Binding]
-public class BootstrapSelenium : IDisposable
-{
-    private readonly IObjectContainer _objectContainer;
-    private IWebDriver _webDriver = null;
-
-    public BootstrapSelenium(IObjectContainer objectContainer)
-    {
-        _objectContainer = objectContainer;
-    }
-
-    [BeforeScenario]
-    public void LoadDriver()
-    {
-        _webDriver = BuildWebDriver();
-        _objectContainer.RegisterInstanceAs(_webDriver, typeof (IWebDriver));
-    }
-
-    // Dispose will be called after scenario execution is complete
-    public void Dispose()
-    {
-        _webDriver?.Quit();
-    }
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					Example: You can use tags to conditionally load dependencies
-				</section>
-				<section>
-					<pre>
-						<code class="gherkin" data-trim>
-@json
-Scenario: Invoke service with JSON payload
-  Given a fully populated request object
-  When I invoke the service
-  Then a valid response should be returned
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="cs smaller" data-trim>
-[BeforeScenario("xml")]
-public void ConfigureXml()
-{
-    _objectContainer
-        .RegisterTypeAs&lt;XmlBodySerializer, IBodySerializer&gt;();
-}
-
-[BeforeScenario("json")]
-public void ConfigureJson()
-{
-    _objectContainer
-        .RegisterTypeAs&lt;JsonBodySerializer, IBodySerializer&gt;();
-}
-
-[BeforeScenario("formurlencoded")]
-public void ConfigureFormUrlEncoded()
-{
-    _objectContainer
-        .RegisterTypeAs&lt;FormUrlEncodingBodySerializer, IBodySerializer&gt;();
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="cs" data-trim>
-[Binding]
-public sealed class AddressServiceSteps
-{
-    private readonly IBodySerializer _bodySerializer;
-
-    public ContentTypeSteps(IBodySerializer bodySerializer)
-    {
-        _bodySerializer = bodySerializer;
-    }
-
-    // Snip
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					Avoid static context properties; use DI instead
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="cs" data-trim>
-private readonly ScenarioContext _scenarioContext
-    = ScenarioContext.Current;
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="cs" data-trim>
-private readonly ScenarioContext _scenarioContext;
-
-public AddressSteps(ScenarioContext scenarioContext)
-{
-    _scenarioContext = scenarioContext;
 }
 						</code>
 					</pre>
