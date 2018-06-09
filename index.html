@@ -341,7 +341,7 @@ public class Search
 					</ul>
 				</section>
 				<section>
-					Example: Retrieve the SpecFlow context objects
+					Example 1: Retrieve the SpecFlow context objects
 				</section>
 				<section>
 					<pre>
@@ -356,7 +356,7 @@ public AddressSteps(ScenarioContext scenarioContext)
 					</pre>
 				</section>
 				<section>
-					Example: You can use DI to load the appropriate Selenium web driver
+					Example 2: You can use DI to load the appropriate Selenium web driver
 				</section>
 				<section>
 					<pre>
@@ -389,7 +389,7 @@ public class BootstrapSelenium : IDisposable
 					</pre>
 				</section>
 				<section>
-					Example: You can use tags to conditionally load dependencies
+					Example 3: You can use tags to conditionally load dependencies
 				</section>
 				<section>
 					<pre>
@@ -499,6 +499,67 @@ Given("the address", address);
 				</section>
 				<section>
 					Reusable Bindings with StepArgumentTransformation
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[StepArgumentTransformation("the customer")]
+public Customer CreateCustomer(Table table)
+{
+    return table.CreateInstance&lt;Customer&gt;();
+}
+
+[Given(@"the customer")]
+public void GivenTheCustomer(Customer customer)
+{
+    _customer = customer;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[StepArgumentTransformation("the address")]
+public Address CreateAddress(Table table)
+{
+    return table.CreateInstance&lt;Address&gt;();
+}
+
+[Given(@"the address")]
+public void GivenTheAddress(Address address)
+{
+    _address = address;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+[Given("a new customer and address")]
+public void GivenANewCustomerAndAddress()
+{
+    Customer customer = new Customer
+    {
+        Salutation = "Miss",
+        FirstName = "Liz",
+        LastName = "Lemon"
+    };
+
+    Address address = new Address
+    {
+        Line1 = "30 Rockefeller Plaza",
+        City = "New York",
+        State = "NY",
+        Zipcode = "10112"
+    };
+
+    _otherBindings.GivenTheCustomer(customer);
+    _otherBindings.GivenTheAddress(address);
+}
+						</code>
+					</pre>
 				</section>
 				<section>
 					<p style="font-size: larger;">Create reusable bindings by:</p>
