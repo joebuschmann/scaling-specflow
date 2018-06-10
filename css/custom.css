@@ -1,0 +1,33 @@
+
+.reveal pre code {
+	max-height: unset;
+}
+
+.reveal pre code.smaller {
+	font-size: 85%;
+}
+
+.reveal pre code.squish {
+	line-height: 25px;
+}
+
+.reveal section img.judgement {
+	z-index: 1;
+	background: unset;
+	border: none;
+	position: absolute;
+	height: 75px;
+	top: 0;
+	right: 0;
+	margin: 0;
+	box-shadow: none;
+}
+
+.reveal section img.social {
+	background: unset;
+	border: none;
+	display: inline-block;
+	height: 30px;
+	margin: 0 10px 0 0;
+	box-shadow: none;
+}
