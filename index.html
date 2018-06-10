@@ -167,6 +167,11 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					<h2>Gherkin</h2>
 				</section>
 				<section>
+					<blockquote cite="https://github.com/cucumber/cucumber/wiki/Gherkin">
+[Gherkin] is a <strong>Business Readable</strong>, Domain Specific Language that lets you describe software's behaviour without detailing how that behaviour is implemented.
+					</blockquote>
+				</section>
+				<section>
 					When building complex test data, avoid parsing table text
 				</section>
 				<section>
@@ -562,49 +567,23 @@ public void GivenANewCustomerAndAddress()
 					</pre>
 				</section>
 				<section>
-					<p style="font-size: larger;">Create reusable bindings by:</p>
-					<ul>
-						<li class="fragment">Avoiding inheritance
-							<ul>
-								<li class="fragment">Including the Steps class</li>
-							</ul>
-						</li>
-						<li class="fragment">Leveraging dependency injection</li>
-						<li class="fragment">Removing table arguments with StepArgumentTransformation</li>
-					</ul>
+					Another example
 				</section>
 				<section>
-					<h2>Bindings</h2>
-				</section>
-				<section>
-					Use regular expressions to convert natural language to input parameters
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
 					<pre>
 						<code class="cs" data-trim>
-[When(@"I remove the product at index (.*)")]
-public void RemoveProduct(int index)
+[When(@"I remove the (.*) product")]
+public void RemoveProduct(string position)
 {
-    _products.RemoveAt(--index);
+    // Position comes in as 1st, 2nd, 3rd, etc.
+    int index = ParsePosition(position);
+
+    // Snip
 }
 						</code>
 					</pre>
 				</section>
 				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="cs" data-trim>
-[When(@"I remove the (\d+)(?:st|nd|rd|th) product")]
-public void RemoveProduct(int index)
-{
-    _products.RemoveAt(--index);
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
 					<pre>
 						<code class="cs" data-trim>
 [StepArgumentTransformation(@"(\d+)(?:st|nd|rd|th)")]
@@ -628,49 +607,16 @@ public void UpdateProduct(int index, string productName)
 					</pre>
 				</section>
 				<section>
-					Use step argument transformations to simplify your bindings
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="cs" data-trim>
-[When(@"the products are sorted by name (.*)")]
-public void SortProducts(string sortOrderText)
-{
-    SortOrder sortOrder = SortOrder.Ascending;
-
-    if (sortOrderText == "from A-Z")
-        sortOrder = SortOrder.Ascending;
-    else if (sortOrderText == "from Z-A")
-        sortOrder = SortOrder.Descending;
-    else
-        Assert.Fail("Invalid sort order text.");
-
-    // Snip
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="cs" data-trim>
-[StepArgumentTransformation(@"from (A-Z|Z-A)")]
-public SortOrder SortOrderTransform(string sortOrderText)
-{
-    if (sortOrderText == "Z-A")
-        return SortOrder.Descending;
-
-    return SortOrder.Ascending;
-}
-
-[When(@"the products are sorted by name (.*)")]
-public void SortProducts(SortOrder sortOrder)
-{
-    // Snip
-}
-						</code>
-					</pre>
+					<p style="font-size: larger;">Create reusable bindings by:</p>
+					<ul>
+						<li class="fragment">Avoiding inheritance
+							<ul>
+								<li class="fragment">Including the Steps class</li>
+							</ul>
+						</li>
+						<li class="fragment">Leveraging dependency injection</li>
+						<li class="fragment">Removing table arguments with StepArgumentTransformation</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Tables</h2>
@@ -908,56 +854,6 @@ public static void RegisterValueMappings()
 					<p>Step Definition Report</p>
 				</section>
 				<section data-background-iframe="reports/step-definition-report.html" data-background-interactive data-background-color="#FFFFFF">
-				</section>
-				<section>
-					<h2>Plugins</h2>
-				</section>
-				<section>
-					<h3>Plugin Types</h3>
-					<p class="fragment current-visible grow">Runtime</p>
-					<p class="fragment current-visible grow">Generator</p>
-					<p class="fragment current-visible grow">Runtime Generator</p>
-				</section>
-				<section>
-					<h3>Configuration</h3>
-					<ol>
-						<li class="fragment">Add the SpecFlow.CustomPlugin NuGet package</li>
-						<li class="fragment">Implement IGeneratorPlugin</li>
-						<li class="fragment">Add the GeneratorPlugin assembly level attribute</li>
-						<li class="fragment">Assembly name must have the suffix ".SpecFlowPlugin"</li>
-						<li class="fragment">Update configuration</li>
-					</ol>
-				</section>
-				<section>
-					<pre>
-						<code class="xml" data-trim>
-&lt;plugins&gt;
-  &lt;add name="NUnit3WithGlobalTestGenerator"
-       path=".\specflow-plugins"
-       type="Generator" /&gt;
-&lt;/plugins&gt;
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="cs smaller" data-trim>
-[assembly: GeneratorPlugin(typeof(NUnit3WithGlobalTestGeneratorPlugin))]
-
-public class NUnit3WithGlobalTestGeneratorPlugin : IGeneratorPlugin
-{
-    public void Initialize(GeneratorPluginEvents generatorPluginEvents,
-        GeneratorPluginParameters generatorPluginParameters)
-    {
-        generatorPluginEvents.CustomizeDependencies += (sender, args) =>
-        {
-            args.ObjectContainer
-                .RegisterTypeAs&lt;NUnit3WithGlobalTestGeneratorProvider, IUnitTestGeneratorProvider&gt;();
-        };
-    }
-}
-						</code>
-					</pre>
 				</section>
 				<section>
 					<p>Further Reading</p>
