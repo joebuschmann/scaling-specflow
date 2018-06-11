@@ -129,7 +129,8 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 				<section>
 					<p>Awkward Gherkin</p>
 					<p class="fragment">Duplicate code/lack of reusability</p>
-					<p class="fragment">Tedious table manipulation</p>					
+					<p class="fragment">Tedious table manipulation</p>
+					<p class="fragment">Unused and missing bindings</p>
 					<p class="fragment">What can you do about these issues?</p>
 				</section>
 				<section>
@@ -815,14 +816,23 @@ public static void RegisterValueMappings()
 					<h2>Reports</h2>
 				</section>
 				<section>
-					<p>Test Execution Report</p>
-				</section>
-				<section data-background-iframe="reports/test-execution-report.html" data-background-interactive data-background-color="#FFFFFF">
+					<h3>Step Definition Report</h3>
+					<p>Finds unbound scenarios and unused bindings</p>
 				</section>
 				<section>
-					<p>Step Definition Report</p>
+					<p style="color: red;">A red background indicates code not used in any scenarios</p>
+					<p style="color: yellow;">A yellow background indicates scenarios with no automation</p>
 				</section>
 				<section data-background-iframe="reports/step-definition-report.html" data-background-interactive data-background-color="#FFFFFF">
+				</section>
+				<section>
+					<h2>Wrapping Up</h2>
+					<ul>
+						<li class="fragment">Keep Gherkin readable and business friendly</li>
+						<li class="fragment">Leverage DI and StepArgumentTranformation for reusable bindings</li>
+						<li class="fragment">Avoid manipulating tables in code</li>
+						<li class="fragment">Track dead code and unbound scenarios with the Step Definition Report</li>
+					</ul>
 				</section>
 				<section>
 					<p>Further Reading</p>
