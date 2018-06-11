@@ -27,6 +27,12 @@
 	box-shadow: none;
 }
 
+.reveal section img.logo {
+	background: unset;
+	border: unset;
+	box-shadow: unset;
+}
+
 .reveal section img.social {
 	background: unset;
 	border: none;
