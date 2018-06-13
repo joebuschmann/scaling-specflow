@@ -46,12 +46,23 @@
 							</a>
 						</small>
 					</p>
+					<aside class="notes">
+						<p>Today I won't be covering BDD or the process of specification by example. This talk will focus on the SpecFlow tool which enables BDD in .NET. Specifically I'll cover advanced usages of SpecFlow to help build a <b>maintainable reusable testing library</b>.</p>
+
+						<p>The intended audience for this talk is a developer or test engineer who is familar with SpecFlow but wants to know more.</p>
+
+						<p>Let's get started.</p>
+					</aside>
 				</section>
 				<section>
 					<h3>What is SpecFlow?</h3>
 					<p class="fragment">Define, manage, and automate human-readable acceptance tests in .NET</p>
 					<p class="fragment">Enable BDD with easy to understand tests</p>
 					<p class="fragment">Build up a living documentation of your system</p>
+
+					<aside class="notes">
+						A brief review of SpecFlow.
+					</aside>
 				</section>
 				<section>
 					<h3>Visual Studio Extension</h3>
@@ -140,6 +151,9 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					<blockquote cite="https://github.com/cucumber/cucumber/wiki/Gherkin">
 [Gherkin] is a <strong>Business Readable</strong>, Domain Specific Language that lets you describe software's behaviour without detailing how that behaviour is implemented.
 					</blockquote>
+					<aside class="notes">
+						The quote is from the Gherkin wiki on GitHub.
+					</aside>
 				</section>
 				<section>
 					When building complex test data, avoid parsing table text
@@ -270,7 +284,7 @@ Examples:
 					Problems with Inheritance
 				</section>
 				<section>
-					<img src="images/inheritance.png" />
+					<img src="images/inheritance-whiteboard.png" />
 				</section>
 				<section>
 					<pre>
