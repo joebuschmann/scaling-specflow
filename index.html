@@ -95,8 +95,8 @@ Feature: GoogleSearch
   I want to perform a search
 
 Scenario: Perform a Google Search
-  Given I navigate to www.google.com
-  When I search for kittens
+  Given I navigate to "www.google.com"
+  When I search for "kittens"
   Then Google should return valid search results
 						</code>
 					</pre>
@@ -156,7 +156,7 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					</aside>
 				</section>
 				<section>
-					When building complex test data, avoid parsing table text
+					Structure your steps to avoid parsing table text
 				</section>
 				<section>
 					<img class="judgement" src="images/bad.png" />
@@ -175,8 +175,8 @@ Scenario: Build a customer
 						<code class="gherkin" data-trim>
 Scenario: Build a customer
   Given the customer
-    | First Name | Last Name | Salutation |
-    | Liz        | Lemon     | Miss       |
+    | Salutation | First Name | Last Name |
+    | Miss       | Liz        | Lemon     |
   And the address
     | Line 1                | City     | State | Zipcode |
     | 30 Rockefeller Plaza  | New York | NY    | 10112   |
@@ -210,8 +210,8 @@ Scenario: Build a customer
 					<pre>
 						<code class="gherkin" data-trim>
 Scenario: Update price
-  When I choose the product with ID 46
-  And update the price to $199.00
+  Given the product with ID 46
+  When the price is updated to $199.00
   Then the price should be saved
 						</code>
 					</pre>
@@ -228,8 +228,8 @@ Background:
     | 47 | Nokia Icon |
  
 Scenario: Update price
-  When I choose the iPhone 6
-  And update the price to $199.00
+  Given the product "iPhone 6"
+  When the price is updated to $199.00
   Then the price should be saved
 						</code>
 					</pre>
@@ -276,6 +276,15 @@ Examples:
   | 50       | 1.15           | 1.30            | 0.50   | 65.00  |
 						</code>
 					</pre>
+				</section>
+				<section>
+					When writing Gherkin you should:
+					<ul>
+						<li class="fragment">Structure your steps to avoid parsing table text</li>
+						<li class="fragment">Use natural language instead of tech speak</li>
+						<li class="fragment">Avoid numeric IDs</li>
+						<li class="fragment">Put rules and equations in the feature file description</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Reusable Bindings</h2>
@@ -464,8 +473,8 @@ public abstract class Steps
 					<pre>
 						<code class="gherkin" data-trim>
 Given the customer
-  | First Name | Last Name | Salutation |
-  | Liz        | Lemon     | Miss       |
+  | Salutation | First Name | Last Name |
+  | Miss       | Liz        | Lemon     |
 And the address
   | Line 1                | City     | State | Zipcode |
   | 30 Rockefeller Plaza  | New York | NY    | 10112   |
@@ -476,7 +485,7 @@ And the address
 					<pre>
 						<code class="cs" data-trim>
 Table customer = new Table("FirstName", "LastName", "Salutation");
-customer.AddRow("Liz", "Lemon", "Miss");
+customer.AddRow("Miss" "Liz", "Lemon");
 
 Table address = new Table("Line 1", "City", "State", "Zipcode");
 address.AddRow("30 Rockefeller Plaza", "New York", "NY", "10112");
@@ -825,6 +834,14 @@ public static void RegisterValueMappings()
 }
 						</code>
 					</pre>
+				</section>
+				<section>
+					<p style="font-size: larger;">Avoid manipulating tables in your bindings with:</p>
+					<ul>
+						<li class="fragment">The runtime table helpers</li>
+						<li class="fragment">Table aliases</li>
+						<li class="fragment">Custom value mappings</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Reports</h2>
