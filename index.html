@@ -90,12 +90,12 @@
 					<pre>
 						<code class="gherkin" data-trim>
 Feature: GoogleSearch
-  In order to validate Google's search service
-  As a first time user of Selenium
+  In order to find information on the internet
+  As a user of the Google search engine
   I want to perform a search
 
 Scenario: Perform a Google Search
-  Given I navigate to "www.google.com"
+  Given a browser loaded with Google's web page
   When I search for "kittens"
   Then Google should return valid search results
 						</code>
@@ -112,8 +112,8 @@ Scenario: Perform a Google Search
     {
         public GoogleSearch() { // Snip }
 
-        [Given(@"I navigate to (.*)")]
-        public void Navigate(string url) { // Snip }
+        [Given(@"a browser loaded with Google's web page")]
+        public void LoadWebPage() { // Snip }
 
         [When(@"I search for (.*)")]
         public void Search(string searchTerm) { // Snip }
