@@ -38,20 +38,23 @@
 					</p>
 					<p>
 						<small>
-							<a href="https://twitter.com/joebuschmann">
+							<a href="https://twitter.com/joebuschmann" target="_blank">
 								<img src="images/twitter.png" class="social" alt="@joebuschmann" />
 							</a>
-							<a href="https://www.linkedin.com/in/joebuschmann">
+							<a href="https://www.linkedin.com/in/joebuschmann" target="_blank">
 								<img src="images/linkedin.png" class="social" alt="Linked In" />
+							</a>
+							<a href="https://www.relativity.com/about-us/" target="_blank">
+								<img src="images/relativity.png" class="social" alt="Relativity" />
 							</a>
 						</small>
 					</p>
 					<aside class="notes">
-						<p>Today I won't be covering BDD or the process of specification by example. This talk will focus on the SpecFlow tool which enables BDD in .NET. Specifically I'll cover advanced usages of SpecFlow to help build a <b>maintainable reusable testing library</b>.</p>
+						<p>Okay, let's get started. My name is Joe Buschmann. I'm a software developer for Relativity in Chicago, and I'll be covering moving beyond the basics with SpecFlow.</p>
+
+						<p>Today's talk covers SpecFlow the tool. I won't cover BDD or the process of specification by example but instead focus on how SpecFlow enables BDD in .NET. Specifically I'll discuss advanced usages of SpecFlow to help build a <b>maintainable reusable testing library</b>.</p>
 
 						<p>The intended audience for this talk is a developer or test engineer who is familar with SpecFlow but wants to know more.</p>
-
-						<p>Let's get started.</p>
 					</aside>
 				</section>
 				<section>
@@ -145,18 +148,18 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					<p class="fragment">What can you do about these issues?</p>
 				</section>
 				<section>
-					<h2>Gherkin</h2>
+					<h2>Gherkin Tips</h2>
 				</section>
 				<section>
 					<blockquote cite="https://github.com/cucumber/cucumber/wiki/Gherkin">
 [Gherkin] is a <strong>Business Readable</strong>, Domain Specific Language that lets you describe software's behaviour without detailing how that behaviour is implemented.
 					</blockquote>
 					<aside class="notes">
-						The quote is from the Gherkin wiki on GitHub.
+						The quote is from the Gherkin wiki on GitHub. Gherkin should include natural language that can be understood by the business.
 					</aside>
 				</section>
 				<section>
-					Structure your steps to avoid parsing table text
+					Tip 1: Structure your steps to avoid parsing table text
 				</section>
 				<section>
 					<img class="judgement" src="images/bad.png" />
@@ -184,7 +187,7 @@ Scenario: Build a customer
 					</pre>
 				</section>
 				<section>
-					Use natural language instead of tech speak
+					Tip 2: Use natural language instead of tech speak
 				</section>
 				<section>
 					<img class="judgement" src="images/bad.png" />
@@ -203,7 +206,7 @@ Scenario: Build a customer
 					</pre>
 				</section>
 				<section>
-					Avoid numeric IDs
+					Tip 3: Avoid numeric IDs
 				</section>
 				<section>
 					<img class="judgement" src="images/bad.png" />
@@ -235,7 +238,7 @@ Scenario: Update price
 					</pre>
 				</section>
 				<section>
-					Put rules and equations in the feature file description
+					Tip 4: Put rules and equations in the feature file description
 				</section>
 				<section>
 					<img class="judgement" src="images/bad.png" />
@@ -261,6 +264,7 @@ Feature: Insurance Quote
 					</pre>
 				</section>
 				<section>
+					<img class="judgement" src="images/good.png" />
 					<pre>
 						<code class="gherkin smaller" data-trim>
 Scenario Outline: Calculate Quote
@@ -879,6 +883,10 @@ public static void RegisterValueMappings()
 						<li><a href="http://gasparnagy.com/2015/05/specflow-tips-problems-with-placing-step-definitions-to-base-classes/">Problems with Step Definitions in Base Classes</a></li>
 						<li><a href="https://stackoverflow.com/questions/49642449/how-to-specify-an-equation-with-bdd">How to specify an equation with BDD</a></li>
 					</ul>
+				</section>
+				<section>
+					<h2>Thank you!</h2>
+					<h5>Happy testing!</h5>
 				</section>
 			</div>
 		</div>
