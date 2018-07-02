@@ -487,15 +487,19 @@ And the address
 				</section>
 				<section>
 					<pre>
-						<code class="cs" data-trim>
-Table customer = new Table("FirstName", "LastName", "Salutation");
-customer.AddRow("Miss" "Liz", "Lemon");
+						<code class="cs smaller" data-trim>
+[Given("a new customer and address")]
+public void GivenANewCustomerAndAddress()
+{
+    Table customer = new Table("FirstName", "LastName", "Salutation");
+    customer.AddRow("Miss" "Liz", "Lemon");
 
-Table address = new Table("Line 1", "City", "State", "Zipcode");
-address.AddRow("30 Rockefeller Plaza", "New York", "NY", "10112");
+    Table address = new Table("Line 1", "City", "State", "Zipcode");
+    address.AddRow("30 Rockefeller Plaza", "New York", "NY", "10112");
 
-Given("the customer", customer);
-Given("the address", address);
+    Given("the customer", customer);
+    Given("the address", address);
+}
 						</code>
 					</pre>
 				</section>
