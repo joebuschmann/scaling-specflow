@@ -201,7 +201,7 @@ Scenario: Build a customer
 					<img class="judgement" src="images/good.png" />
 					<pre>
 						<code class="gherkin" data-trim>
-							When I remove the 5th product
+							When I remove the 6th product
 						</code>
 					</pre>
 				</section>
@@ -557,8 +557,8 @@ public void GivenANewCustomerAndAddress()
         Zipcode = "10112"
     };
 
-    _otherBindings.GivenTheCustomer(customer);
-    _otherBindings.GivenTheAddress(address);
+    _customerSteps.GivenTheCustomer(customer);
+    _addressSteps.GivenTheAddress(address);
 }
 						</code>
 					</pre>
