@@ -144,156 +144,18 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 				</section>
 				<section>
 					<p>So you’ve written some tests using Specflow, and you’re feeling good about test coverage. But as the code base gets larger, some issues are starting to emerge.</p>
+
+					<aside class="notes">
+						Like any other code base, automated tests accrue tech debt over time.
+					</aside>
 				</section>
 				<section>
-					<p>Awkward Gherkin</p>
+					<p>Gherkin is difficult to bind</p>
+					<p class="fragment">Fragile bindings</p>
 					<p class="fragment">Duplicate code/lack of reusability</p>
 					<p class="fragment">Tedious table manipulation</p>
 					<p class="fragment">Unused and missing bindings</p>
 					<p class="fragment">What can you do to fix these issues?</p>
-				</section>
-				<section>
-					<h2>Gherkin Tips</h2>
-				</section>
-				<section>
-					<blockquote cite="https://github.com/cucumber/cucumber/wiki/Gherkin">
-[Gherkin] is a <strong>Business Readable</strong>, Domain Specific Language that lets you describe software's behaviour without detailing how that behaviour is implemented.
-					</blockquote>
-					<aside class="notes">
-						The quote is from the Gherkin wiki on GitHub. Gherkin should include natural language that can be understood by the business.
-					</aside>
-				</section>
-				<section>
-					Tip 1: Structure your steps to avoid parsing table values
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Scenario: Build a customer
-  Given the customer
-    | Name           | Address                                   |
-    | Miss Liz Lemon | 30 Rockefeller Plaza; New York; NY; 10112 |
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Scenario: Build a customer
-  Given the customer
-    | Salutation | First Name | Last Name |
-    | Miss       | Liz        | Lemon     |
-  And the address
-    | Line 1                | City     | State | Zipcode |
-    | 30 Rockefeller Plaza  | New York | NY    | 10112   |
-						</code>
-					</pre>
-				</section>
-				<section>
-					Tip 2: Use natural language instead of tech speak
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-							When I remove the product at index 5
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-							When I remove the 6th product
-						</code>
-					</pre>
-				</section>
-				<section>
-					Tip 3: Avoid numeric IDs
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Scenario: Update price
-  Given the product with ID 46
-  When the price is updated to $199.00
-  Then the price should be saved
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Background:
-  Given I have the following products
-    | Id | Name       |
-    | 45 | Galaxy S5  |
-    | 46 | iPhone 6   |
-    | 47 | Nokia Icon |
- 
-Scenario: Update price
-  Given the product "iPhone 6"
-  When the price is updated to $199.00
-  Then the price should be saved
-						</code>
-					</pre>
-				</section>
-				<section>
-					Tip 4: Put rules and equations in the feature file description
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Feature: Insurance Quote
-  Test the quoting engine.
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Feature: Insurance Quote
-  Quotes begin with a baseline price.
-  It is adjusted by the insured individual's risk score.
-  It is further adjusted by other scores from people
-    living near the insured.
-  quote = baseline *
-    (individual adjustment + weight * (co-located adjustment - 1))
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin smaller" data-trim>
-Scenario Outline: Calculate Quote
-  Given a baseline price of $&lt;baseline&gt;
-  And an individual adjustment of &lt;indvAdjustment&gt;
-  And a co-located adjustment of &lt;coLocAdjustment&gt; and weight of &lt;weight&gt;
-  When I calculate the final quote
-  Then the amount should be $&lt;amount&gt;
-
-Examples:
-  | baseline | indvAdjustment | coLocAdjustment | weight | amount |
-  | 50       | 0.90           | 0.95            | 0.50   | 43.75  |
-  | 50       | 1.15           | 1.30            | 0.50   | 65.00  |
-						</code>
-					</pre>
-				</section>
-				<section>
-					When writing Gherkin you should:
-					<ul>
-						<li class="fragment">Structure your steps to avoid parsing table values</li>
-						<li class="fragment">Use natural language instead of tech speak</li>
-						<li class="fragment">Avoid numeric IDs</li>
-						<li class="fragment">Put rules and equations in the feature file description</li>
-					</ul>
 				</section>
 				<section>
 					<h2>Reusable Bindings</h2>
@@ -311,10 +173,7 @@ for step 'Given Invoke Service'
 					</pre>
 				</section>
 				<section>
-					Dependency Injection
-				</section>
-				<section>
-					SpecFlow supports a simple dependency framework
+					SpecFlow supports a simple IoC framework
 				</section>
 				<section>
 					<p>Inject dependencies with constructor parameters</p>
@@ -491,6 +350,7 @@ And the address
 					</pre>
 				</section>
 				<section>
+					<img class="judgement" src="images/bad.png" />
 					<pre>
 						<code class="cs smaller" data-trim>
 [Given("a new customer and address")]
@@ -546,6 +406,7 @@ public void GivenTheAddress(Address address)
 					</pre>
 				</section>
 				<section>
+					<img class="judgement" src="images/good.png" />
 					<pre>
 						<code class="cs" data-trim>
 [Given("a new customer and address")]
@@ -577,6 +438,14 @@ public void GivenANewCustomerAndAddress()
 				</section>
 				<section>
 					<pre>
+						<code class="gherkin" data-trim>
+							When I remove the 6th product
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
 						<code class="cs" data-trim>
 [When(@"I remove the (.*) product")]
 public void RemoveProduct(string position)
@@ -590,6 +459,7 @@ public void RemoveProduct(string position)
 					</pre>
 				</section>
 				<section>
+					<img class="judgement" src="images/good.png" />
 					<pre>
 						<code class="cs" data-trim>
 [StepArgumentTransformation(@"(\d+)(?:st|nd|rd|th)")]
@@ -649,6 +519,34 @@ public void UpdateProduct(int index, string productName)
 | Line 1                | City     | State | Zipcode |
 | 30 Rockefeller Plaza  | New York | NY    | 10112   |
 | 311 South Wacker Dr   | Chicago  | IL    | 60606   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Table values should be atomic
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | Name           | Address                                   |
+    | Miss Liz Lemon | 30 Rockefeller Plaza; New York; NY; 10112 |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | Salutation | First Name | Last Name |
+    | Miss       | Liz        | Lemon     |
+  And the address
+    | Line 1                | City     | State | Zipcode |
+    | 30 Rockefeller Plaza  | New York | NY    | 10112   |
 						</code>
 					</pre>
 				</section>
@@ -851,6 +749,7 @@ public static void RegisterValueMappings()
 				<section>
 					<p style="font-size: larger;">Avoid manipulating tables in your bindings with:</p>
 					<ul>
+						<li class="fragment">Atomic values</li>
 						<li class="fragment">The runtime table helpers</li>
 						<li class="fragment">Table aliases</li>
 						<li class="fragment">Custom value mappings</li>
@@ -872,7 +771,6 @@ public static void RegisterValueMappings()
 				<section>
 					<h2>Wrapping Up</h2>
 					<ul>
-						<li class="fragment">Keep Gherkin readable and business friendly</li>
 						<li class="fragment">Leverage DI and StepArgumentTransformation for reusable bindings</li>
 						<li class="fragment">Avoid manipulating tables in code</li>
 						<li class="fragment">Track dead code and unbound scenarios with the Step Definition Report</li>
@@ -882,16 +780,10 @@ public static void RegisterValueMappings()
 					<p>Further Reading</p>
 					<ul style="font-size: smaller">
 						<li><a href="http://specflow.org/documentation/" target="_blank">SpecFlow Documentation</a></li>
-						<ul>
-							<li><a href="http://specflow.org/documentation/Parallel-Execution/" target="_blank">Parallel Execution</a></li>
-							<li><a href="http://specflow.org/documentation/Reporting/" target="_blank">Reports</a></li>
-							<li><a href="http://specflow.org/documentation/Plugins/" target="_blank">Plugins</a></li>
-						</ul>
 						<li><a href="https://joebuschmann.com/tag/specflow/" target="_blank">JoeBuschmann.com</a></li>
 						<li><a href="http://gasparnagy.com/2017/02/specflow-tips-baseclass-or-context-injection/" target="_blank">Base Class or Context Injection?</a></li>
-						<li><a href="https://github.com/joebuschmann/selenium-demo" target="_blank">Demo of SpecFlow and Selenium</a></li>
 						<li><a href="http://gasparnagy.com/2015/05/specflow-tips-problems-with-placing-step-definitions-to-base-classes/" target="_blank">Problems with Step Definitions in Base Classes</a></li>
-						<li><a href="https://stackoverflow.com/questions/49642449/how-to-specify-an-equation-with-bdd" target="_blank">How to specify an equation with BDD</a></li>
+						<li><a href="https://github.com/joebuschmann/selenium-demo" target="_blank">Demo of SpecFlow and Selenium</a></li>
 					</ul>
 				</section>
 				<section>
