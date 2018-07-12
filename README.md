@@ -1,6 +1,6 @@
 # SpecFlow: Moving Beyond the Basics
 
-These are the slides for my talk at KCDC 2018. They are implemented using [Reveal JS](https://revealjs.com) - an HTML presenation framework.
+These are the slides for my talk at **KCDC 2018**. They are implemented using [Reveal JS](https://revealjs.com) - an HTML presenation framework.
 
 [View the Slides](https://joebuschmann.github.io/specflow-moving-beyond-the-basics)
 
