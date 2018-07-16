@@ -3,10 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<meta name="description" content="Moving Beyond the Basics in SpecFlow">
+		<meta name="description" content="Scaling SpecFlow With Proper Architecture">
 		<meta name="author" content="Joe Buschmann">
 
-		<title>Moving Beyond the Basics in SpecFlow</title>
+		<title>Scaling SpecFlow With Proper Architecture</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -30,7 +30,7 @@
 			<div class="slides">
 				<section>
 					<img class="logo" src="images/specflow-logo.png" />
-					<h3>Moving Beyond the Basics</h3>
+					<h3>Scaling SpecFlow With Proper Architecture</h3>
 					<p>
 						<small>
 						Presented by <a href="http://joebuschmann.com">Joe Buschmann</a>
@@ -53,26 +53,23 @@
 						</small>
 					</p>
 					<aside class="notes">
-						<p>Okay, let's get started. My name is Joe Buschmann. I'm a software developer for Relativity in Chicago, and I'll be covering moving beyond the basics with SpecFlow.</p>
+						<p>Okay, let's get started. My name is Joe Buschmann. I'm a software developer for Relativity in Chicago, and I'll be covering how to scale your SpecFlow code base as your application grows.</p>
 
-						<p>Today's talk covers SpecFlow the tool. I won't cover BDD or the process of specification by example but instead focus on how SpecFlow enables BDD in .NET. Specifically I'll discuss advanced usages of SpecFlow to help build a <b>maintainable reusable testing library</b>.</p>
+						<p>Today's talk covers SpecFlow the tool. I won't cover BDD or the process of specification by example but instead focus on how SpecFlow enables BDD in .NET. Specifically I'll discuss advanced usages of SpecFlow to help build a <b>maintainable reusable testing library</b> that scales.</p>
 
 						<p>The intended audience for this talk is a developer or test engineer who is familar with SpecFlow but wants to know more.</p>
 					</aside>
 				</section>
-				<section data-background-image="images/kcdc-sponsors-2018.png" data-background-size="contain">
-					<aside class="notes">
-						<p>We have a number of sponsors this year who make this event possible. Take a moment to stop by and say hi.</p>
-					</aside>
+				<section>
+					<h2>A Brief Review of the Basics</h2>
 				</section>
 				<section>
 					<h3>What is SpecFlow?</h3>
-					<p class="fragment">Define, manage, and automate human-readable acceptance tests in .NET</p>
-					<p class="fragment">Enable BDD with easy to understand tests</p>
-					<p class="fragment">Build up a living documentation of your system</p>
 
 					<aside class="notes">
-						A brief review of SpecFlow.
+						<p>Define, manage, and automate human-readable acceptance tests in .NET</p>
+						<p>Enable BDD with easy to understand tests</p>
+						<p>Build up a living documentation of your system</p>
 					</aside>
 				</section>
 				<section>
@@ -159,6 +156,267 @@ nunit-console.exe /xml:results.xml some\path\tests.dll
 					<p class="fragment">Tedious table manipulation</p>
 					<p class="fragment">Unused and missing bindings</p>
 					<p class="fragment">What can you do to fix these issues?</p>
+				</section>
+				<section>
+					<h2>Tables</h2>
+				</section>
+				<section>
+					Vertical versus horizontal tables
+				</section>
+				<section>
+					<p>Vertical Table</p>
+					<pre>
+						<code class="gherkin" data-trim>
+| Field   | Value                |
+| Line 1  | 30 Rockefeller Plaza |
+| City    | New York             |
+| State   | NY                   |
+| Zipcode | 10112                |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>Horizontal Table</p>
+					<pre>
+						<code class="gherkin" data-trim>
+| Line 1                | City     | State | Zipcode |
+| 30 Rockefeller Plaza  | New York | NY    | 10112   |
+| 311 South Wacker Dr   | Chicago  | IL    | 60606   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Table values should be atomic
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | Name           | Address                                   |
+    | Miss Liz Lemon | 30 Rockefeller Plaza; New York; NY; 10112 |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="gherkin" data-trim>
+Scenario: Build a customer
+  Given the customer
+    | Salutation | First Name | Last Name |
+    | Miss       | Liz        | Lemon     |
+  And the address
+    | Line 1                | City     | State | Zipcode |
+    | 30 Rockefeller Plaza  | New York | NY    | 10112   |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Table helpers make working with tables easier
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Given(@"the following address")]
+public void GivenTheFollowingAddress(Table table)
+{
+    Address address = new Address();
+
+    address.Line1 = table.Rows[0]["Line 1"];
+    address.Line2 = table.Rows[0]["Line 2"];
+    address.City = table.Rows[0]["City"];
+    address.State = table.Rows[0]["State"];
+    address.Zipcode = table.Rows[0]["Zipcode"];
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Given(@"the following address")]
+public void GivenTheFollowingAddress(Table table)
+{
+    Address address = table.CreateInstance&lt;Address&gt;();
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Then(@"the address is")]
+public void ValidateAddress(Table table)
+{
+    Assert.AreEqual(table.Rows[0]["Line 1"], _address.Line1);
+    Assert.AreEqual(table.Rows[0]["Line 2"], _address.Line2);
+    Assert.AreEqual(table.Rows[0]["City"], _address.City);
+    Assert.AreEqual(table.Rows[0]["State"], _address.State);
+    Assert.AreEqual(table.Rows[0]["Zipcode"], _address.Zipcode);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+[Then(@"the address is")]
+public void ValidateAddress(Table table)
+{
+    table.CompareToInstance(_address);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h3>TechTalk.SpecFlow.Assist</h3>
+					<ul>
+						<li class="fragment">CreateInstance</li>
+						<li class="fragment">FillInstance</li>
+						<li class="fragment">CreateSet</li>
+						<li class="fragment">CompareToInstance</li>
+						<li class="fragment">CompareToSet</li>
+					</ul>
+				</section>
+				<section>
+					Customize field mappings with table aliases
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+public class Address
+{
+    [TableAliases("Street")]
+    public string Line1 { get; set; }
+
+    [TableAliases("Township", "Village", "Municipality")]
+    public string City { get; set; }
+
+    [TableAliases("Province")]
+    public string State { get; set; }
+
+    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
+    public string Zipcode { get; set; }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Given the address
+  | Street          | Village | Province | Postal Code |
+  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     |
+						</code>
+					</pre>
+				</section>
+				<section>
+					Customize value mappings with IValueRetriever and IValueComparer
+				</section>
+				<section>
+					<pre>
+						<code class="gherkin" data-trim>
+Given the address
+  | Street          | Village | Province | Postal Code | Location |
+  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     | (42, 88) |
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+public class Address
+{
+    [TableAliases("Street")]
+    public string Line1 { get; set; }
+
+    [TableAliases("Township", "Village")]
+    public string City { get; set; }
+
+    [TableAliases("Province")]
+    public string State { get; set; }
+
+    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
+    public string Zipcode { get; set; }
+
+    public GeoLocation Location { get; set; }
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>IValueRetriever</p>
+					<pre>
+						<code class="cs smaller" data-trim>
+public bool CanRetrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
+    Type targetType, Type propertyType)
+{
+    return propertyType == typeof(GeoLocation);
+}
+
+public object Retrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
+    Type targetType, Type propertyType)
+{
+    string coordinates = keyValuePair.Value;
+    GeoLocation location;
+
+    if (TryGetLocation(coordinates, out location))
+        return location;
+
+    throw new Exception(
+        $"Unable to parse the location coordinates {coordinates}.");
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>IValueComparer</p>
+					<pre>
+						<code class="cs" data-trim>
+public bool CanCompare(object actualValue)
+{
+    return actualValue is GeoLocation;
+}
+
+public bool Compare(string expectedValue, object actualValue)
+{
+    GeoLocation expectedLocation;
+
+    if (TryGetLocation(expectedValue, out expectedLocation))
+        return expectedLocation.Equals(actualValue);
+
+    return false;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<pre>
+						<code class="cs smaller" data-trim>
+[BeforeTestRun]
+public static void RegisterValueMappings()
+{
+    var geoLocationValueHandler = new GeoLocationValueHandler();
+    Service.Instance.RegisterValueRetriever(geoLocationValueHandler);
+    Service.Instance.RegisterValueComparer(geoLocationValueHandler);
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p style="font-size: larger;">Avoid manipulating tables in your bindings with:</p>
+					<ul>
+						<li class="fragment">Atomic values</li>
+						<li class="fragment">The runtime table helpers</li>
+						<li class="fragment">Table aliases</li>
+						<li class="fragment">Custom value mappings</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Reusable Bindings</h2>
@@ -495,267 +753,6 @@ public void UpdateProduct(int index, string productName)
 						</li>
 						<li class="fragment">Leveraging dependency injection</li>
 						<li class="fragment">Removing table arguments with StepArgumentTransformation</li>
-					</ul>
-				</section>
-				<section>
-					<h2>Tables</h2>
-				</section>
-				<section>
-					Vertical versus horizontal tables
-				</section>
-				<section>
-					<p>Vertical Table</p>
-					<pre>
-						<code class="gherkin" data-trim>
-| Field   | Value                |
-| Line 1  | 30 Rockefeller Plaza |
-| City    | New York             |
-| State   | NY                   |
-| Zipcode | 10112                |
-						</code>
-					</pre>
-				</section>
-				<section>
-					<p>Horizontal Table</p>
-					<pre>
-						<code class="gherkin" data-trim>
-| Line 1                | City     | State | Zipcode |
-| 30 Rockefeller Plaza  | New York | NY    | 10112   |
-| 311 South Wacker Dr   | Chicago  | IL    | 60606   |
-						</code>
-					</pre>
-				</section>
-				<section>
-					Table values should be atomic
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Scenario: Build a customer
-  Given the customer
-    | Name           | Address                                   |
-    | Miss Liz Lemon | 30 Rockefeller Plaza; New York; NY; 10112 |
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="gherkin" data-trim>
-Scenario: Build a customer
-  Given the customer
-    | Salutation | First Name | Last Name |
-    | Miss       | Liz        | Lemon     |
-  And the address
-    | Line 1                | City     | State | Zipcode |
-    | 30 Rockefeller Plaza  | New York | NY    | 10112   |
-						</code>
-					</pre>
-				</section>
-				<section>
-					Table helpers make working with tables easier
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="cs" data-trim>
-[Given(@"the following address")]
-public void GivenTheFollowingAddress(Table table)
-{
-    Address address = new Address();
-
-    address.Line1 = table.Rows[0]["Line 1"];
-    address.Line2 = table.Rows[0]["Line 2"];
-    address.City = table.Rows[0]["City"];
-    address.State = table.Rows[0]["State"];
-    address.Zipcode = table.Rows[0]["Zipcode"];
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="cs" data-trim>
-[Given(@"the following address")]
-public void GivenTheFollowingAddress(Table table)
-{
-    Address address = table.CreateInstance&lt;Address&gt;();
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/bad.png" />
-					<pre>
-						<code class="cs" data-trim>
-[Then(@"the address is")]
-public void ValidateAddress(Table table)
-{
-    Assert.AreEqual(table.Rows[0]["Line 1"], _address.Line1);
-    Assert.AreEqual(table.Rows[0]["Line 2"], _address.Line2);
-    Assert.AreEqual(table.Rows[0]["City"], _address.City);
-    Assert.AreEqual(table.Rows[0]["State"], _address.State);
-    Assert.AreEqual(table.Rows[0]["Zipcode"], _address.Zipcode);
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<img class="judgement" src="images/good.png" />
-					<pre>
-						<code class="cs" data-trim>
-[Then(@"the address is")]
-public void ValidateAddress(Table table)
-{
-    table.CompareToInstance(_address);
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<h3>TechTalk.SpecFlow.Assist</h3>
-					<ul>
-						<li class="fragment">CreateInstance</li>
-						<li class="fragment">FillInstance</li>
-						<li class="fragment">CreateSet</li>
-						<li class="fragment">CompareToInstance</li>
-						<li class="fragment">CompareToSet</li>
-					</ul>
-				</section>
-				<section>
-					Customize field mappings with table aliases
-				</section>
-				<section>
-					<pre>
-						<code class="cs" data-trim>
-public class Address
-{
-    [TableAliases("Street")]
-    public string Line1 { get; set; }
-
-    [TableAliases("Township", "Village", "Municipality")]
-    public string City { get; set; }
-
-    [TableAliases("Province")]
-    public string State { get; set; }
-
-    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
-    public string Zipcode { get; set; }
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="gherkin" data-trim>
-Given the address
-  | Street          | Village | Province | Postal Code |
-  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     |
-						</code>
-					</pre>
-				</section>
-				<section>
-					Customize value mappings with IValueRetriever and IValueComparer
-				</section>
-				<section>
-					<pre>
-						<code class="gherkin" data-trim>
-Given the address
-  | Street          | Village | Province | Postal Code | Location |
-  | 110 Prairie Way | Elkhorn | Manitoba | P5A 0A4     | (42, 88) |
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="cs" data-trim>
-public class Address
-{
-    [TableAliases("Street")]
-    public string Line1 { get; set; }
-
-    [TableAliases("Township", "Village")]
-    public string City { get; set; }
-
-    [TableAliases("Province")]
-    public string State { get; set; }
-
-    [TableAliases("Zip", "Zip\\s*Code", "Postal\\s*Code")]
-    public string Zipcode { get; set; }
-
-    public GeoLocation Location { get; set; }
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<p>IValueRetriever</p>
-					<pre>
-						<code class="cs smaller" data-trim>
-public bool CanRetrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
-    Type targetType, Type propertyType)
-{
-    return propertyType == typeof(GeoLocation);
-}
-
-public object Retrieve(KeyValuePair&lt;string, string&gt; keyValuePair,
-    Type targetType, Type propertyType)
-{
-    string coordinates = keyValuePair.Value;
-    GeoLocation location;
-
-    if (TryGetLocation(coordinates, out location))
-        return location;
-
-    throw new Exception(
-        $"Unable to parse the location coordinates {coordinates}.");
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<p>IValueComparer</p>
-					<pre>
-						<code class="cs" data-trim>
-public bool CanCompare(object actualValue)
-{
-    return actualValue is GeoLocation;
-}
-
-public bool Compare(string expectedValue, object actualValue)
-{
-    GeoLocation expectedLocation;
-
-    if (TryGetLocation(expectedValue, out expectedLocation))
-        return expectedLocation.Equals(actualValue);
-
-    return false;
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<pre>
-						<code class="cs smaller" data-trim>
-[BeforeTestRun]
-public static void RegisterValueMappings()
-{
-    var geoLocationValueHandler = new GeoLocationValueHandler();
-    Service.Instance.RegisterValueRetriever(geoLocationValueHandler);
-    Service.Instance.RegisterValueComparer(geoLocationValueHandler);
-}
-						</code>
-					</pre>
-				</section>
-				<section>
-					<p style="font-size: larger;">Avoid manipulating tables in your bindings with:</p>
-					<ul>
-						<li class="fragment">Atomic values</li>
-						<li class="fragment">The runtime table helpers</li>
-						<li class="fragment">Table aliases</li>
-						<li class="fragment">Custom value mappings</li>
 					</ul>
 				</section>
 				<section>
