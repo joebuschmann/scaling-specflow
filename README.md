@@ -2,7 +2,7 @@
 
 These are the slides for my talk on how to scale a SpecFlow codebase with proper architecture. The slides use [Reveal JS](https://revealjs.com) - an HTML presentation framework.
 
-[View the Slides](https://joebuschmann.github.io/scaling-your-specflow-codebase/)
+[View the Slides](https://joebuschmann.github.io/scaling-specflow/)
 
 ## Abstract
 
