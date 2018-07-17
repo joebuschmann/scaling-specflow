@@ -767,6 +767,50 @@ public void UpdateProduct(int index, string productName)
 					</ul>
 				</section>
 				<section>
+					Parallel Execution
+				</section>
+				<section>
+					No static context properties
+				</section>
+				<section>
+					<img class="judgement" src="images/bad.png" />
+					<pre>
+						<code class="cs" data-trim>
+private readonly ScenarioContext _scenarioContext
+    = ScenarioContext.Current;
+						</code>
+					</pre>
+				</section>
+				<section>
+					<img class="judgement" src="images/good.png" />
+					<pre>
+						<code class="cs" data-trim>
+private readonly ScenarioContext _scenarioContext;
+
+public AddressSteps(ScenarioContext scenarioContext)
+{
+    _scenarioContext = scenarioContext;
+}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<p>The test runner has to support parallel execution</p>
+				</section>
+				<section>
+					<img class="nunit" src="images/nunit.png" />
+					<img class="fragment xunit" src="images/xunit.png" />
+					<img class="fragment specflow-plus-runner" src="images/specflow-plus-runner.png" />
+				</section>
+				<section>
+					<pre>
+						<code class="cs" data-trim>
+using NUnit.Framework;
+[assembly: Parallelizable(ParallelScope.Fixtures)]
+						</code>
+					</pre>
+				</section>
+				<section>
 					<h2>Reports</h2>
 				</section>
 				<section>

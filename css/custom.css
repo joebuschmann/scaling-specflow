@@ -41,3 +41,16 @@
 	margin: 0 10px 0 0;
 	box-shadow: none;
 }
+
+.reveal section img.nunit {
+	height: 200px;
+}
+
+.reveal section img.xunit {
+	height: 150px;
+}
+
+.reveal section img.specflow-plus-runner {
+
+}
+
